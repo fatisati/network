@@ -2,7 +2,7 @@ import socket
 import select
 from Udp import Udp
 
-file = open('client.html', 'wb')
+file = open('./html/client.html', 'wb')
 
 sourceProtocol = 'udp'
 sourceHost = '127.0.0.1'

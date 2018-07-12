@@ -7,7 +7,7 @@ import requests as req
 import select
 from Udp import Udp
 
-file = open('proxy.html', 'wb')
+file = open('./html/proxy.html', 'wb')
 
 dns_cache = []
 http_cache = []
