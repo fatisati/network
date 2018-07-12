@@ -1,31 +1,45 @@
 import socket
 import select
-UDP_IP_ADDRESS = "127.0.0.1"
-UDP_PORT_NO = 6789
-Message = "GET / HTTP/1.1 Host: aut.ac.ir "
+from Udp import Udp
 
-clientSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-clientSock.settimeout(0.5)
-ackSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-ackSock.setblocking(0)
-ackSock.bind((UDP_IP_ADDRESS, 2222))
+file = open('client.html', 'wb')
 
-clientSock.sendto(bytes(Message, 'utf8'), (UDP_IP_ADDRESS, UDP_PORT_NO))
+sourceProtocol = 'udp'
+sourceHost = '127.0.0.1'
+sourcePort = 80
+destProtocol = 'tcp'
 
-i = 0
-ackSock.setblocking(0)
-while(i<15):
-    ready = select.select([ackSock], [], [], 0.3)
-    if ready[0]:
-        data = ackSock.recv(4096)
-        print(data)
-        break
-    else:
-        print("timeout")
-        i+=1
-        clientSock.sendto(bytes(Message, 'utf8'), (UDP_IP_ADDRESS, UDP_PORT_NO))
-ready = select.select([ackSock], [], [], 1)
-if ready[0]:
-    data, address = ackSock.recvfrom(4096)
-    clientSock.sendto(bytes("ack", 'utf8'), (UDP_IP_ADDRESS, UDP_PORT_NO))
+client_ip = "127.0.0.1"
+proxy_ip = "127.0.0.1"
+
+client_send_port = 6789
+client_rec_port = 2222
+
+# http start
+
+if sourceProtocol == 'udp':
+    msg = 'GET / HTTP/1.1 Host: quera.ir/'
+    udp = Udp()
+    udp.udp_send(msg, (proxy_ip, client_send_port), (proxy_ip, client_rec_port), 0.5)
+    data = udp.udp_rec((proxy_ip, client_send_port), (proxy_ip, client_rec_port))
+
     print(data)
+    file.write(data.encode('UTF-8'))
+
+# http end
+
+if sourceProtocol == 'tcp':
+    type = 'A'
+    server = '204.74.108.1'
+    target = 'google.com'
+    TCP_PORT = 5005
+    BUFFER_SIZE = 1024
+    MESSAGE = type + ' ' + server + ' '+target + '#'
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((proxy_ip, TCP_PORT))
+
+    s.send(bytes(MESSAGE,'utf8'))
+    data = s.recv(BUFFER_SIZE)
+    print(str(data))
+    s.close()
