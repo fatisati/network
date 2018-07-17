@@ -66,7 +66,7 @@ class Udp:
         send.close()
         rec.close()
 
-    def udp_rec(self, sendAddr, recAddr):
+    def udp_rec(self, recAddr, sendPort):
 
         send = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         rec = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -81,7 +81,9 @@ class Udp:
             ready = select.select([rec], [], [])
 
             if ready[0]:
-                data = self.bytes_to_str(rec.recv(mrs))
+                data, sendAddr = rec.recvfrom(mrs)  # buffer size is 1024 bytes
+                sendAddr = sendAddr[0]
+                data = self.bytes_to_str(data)
                 #print(data)
                 if data[-2] == 'f': #data[-2] is parity then
                     ack = data[-3]
@@ -91,7 +93,7 @@ class Udp:
 
                 parity = self.parity(data[:-1])
                 if ack == str(sequence_no) and str(parity) == data[-1]:
-                    send.sendto(self.str_to_bytes(ack), sendAddr)
+                    send.sendto(self.str_to_bytes(ack), (sendAddr, sendPort))
                     sequence_no += 1
                     sequence_no %= 2
 
@@ -109,7 +111,7 @@ class Udp:
                     finish = 0
         send.close()
         rec.close()
-        return final_data
+        return final_data, sendAddr
 
     def parity(self, msg):
         if parity_en == 0:
