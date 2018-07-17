@@ -12,13 +12,11 @@ file = open('./html/proxy.html', 'wb')
 dns_cache = []
 http_cache = []
 
-tmp = 1
-
 def dns_query(type, server, domain):
     k = 0
     msg = ''
     res = dns.resolver.Resolver()
-    res.nameservers = ['8.8.8.8']
+    res.nameservers = [server]
 
     for record in dns_cache:
         if record[0] == type and record[1] == server and record[2] == domain:
@@ -27,10 +25,7 @@ def dns_query(type, server, domain):
     while k < 15:
         #print(k)
         try:
-            if tmp == 1:
-                answer = res.query(domain, type)#, source=server)
-            else:
-                answer = dns.resolver.query(domain, type)#, source=server)
+            answer = res.query(domain, type)#, source=server)
             for data in answer:
                 if type == 'A':
                     print(data.address)
